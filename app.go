@@ -75,35 +75,40 @@ func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abci
 	return &abcitypes.ResponseProcessProposal{Status: abcitypes.ResponseProcessProposal_ACCEPT}, nil
 }
 
-// Iterate over TX
-// Store result
 func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.RequestFinalizeBlock) (*abcitypes.ResponseFinalizeBlock, error) {
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
 	app.onGoingBlock = app.db.NewTransaction(true)
 	for i, tx := range req.Txs {
 		if code := app.isValid(tx); code != 0 {
-			log.Print("Error in tx in if")
+			log.Printf("Error in tx in if")
 			txs[i] = &abcitypes.ExecTxResult{Code: code}
 		} else {
 			parts := bytes.SplitN(tx, []byte("="), 2)
 			key, value := parts[0], parts[1]
-			log.Print("Error in tx in else")
+			log.Printf("Adding key %s with value %s", key, value)
 
 			if err := app.onGoingBlock.Set(key, value); err != nil {
 				log.Panicf("Error writing to database, unable to execute tx: %v", err)
 				//return &abcitypes.ResponseFinalizeBlock{}, err
 			}
+			log.Printf("Successfully added key %s with value %s", key, value)
+
+			// Marshal the ExecTxResult to the txs slice element
+			txs[i] = &abcitypes.ExecTxResult{}
+			if _, err := txs[i].MarshalToSizedBuffer(nil); err != nil {
+				log.Panicf("Error marshalling tx result: %v", err)
+			}
 		}
 	}
-	log.Print("Error in tx after for loop")
+	log.Print("Finished iterating over all transactions")
+
 	return &abcitypes.ResponseFinalizeBlock{
 		TxResults:        txs,
 		AppHash:          []byte{},
 		Events:           []abcitypes.Event{},
 		ValidatorUpdates: abcitypes.ValidatorUpdates{},
 	}, nil
-
 }
 
 func (app KVStoreApplication) Commit(_ context.Context, commit *abcitypes.RequestCommit) (*abcitypes.ResponseCommit, error) {
