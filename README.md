@@ -9,7 +9,7 @@ The application is based on ABCI++ and hence consolidates - `BeginBlock`, `EndBl
 **Clone the repo**
 
 **From the root of your project, run:** <br>
-`go run github.com/cometbft/cometbft/cmd/cometbft@v0.37.0 init --home /tmp/cometbft-home`
+`go run github.com/cometbft/cometbft/cmd/cometbft@v0.38.0-alpha.1 init --home /tmp/cometbft-home `
 
 **Rebuild the app:** <br>
 `go build -mod=mod`
@@ -20,7 +20,7 @@ The application is based on ABCI++ and hence consolidates - `BeginBlock`, `EndBl
 **We need to start CometBFT service and point it to our application. 
 Open a new terminal window and cd to the same folder where the app is running. 
 Then execute the following command:** <br>
-`go run github.com/cometbft/cometbft/cmd/cometbft@v0.37.0 node --home /tmp/cometbft-home --proxy_app=unix://example.sock`
+`go run github.com/cometbft/cometbft/cmd/cometbft@v0.38.0-alpha.1 node --home /tmp/cometbft-home --proxy_app=127.0.0.1:5000`
 
 **Using the application:** <br>
 `curl -s 'localhost:26657/broadcast_tx_commit?tx="cometbft=rocks"'`
